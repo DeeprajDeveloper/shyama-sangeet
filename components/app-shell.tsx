@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { PlaylistData } from "@/lib/types";
-import { Settings2, X } from "lucide-react";
+import { Film, Palette, X } from "lucide-react";
 import { Header } from "./header";
 import { NowPlaying } from "./now-playing";
 import { PlayerBar } from "./player-bar";
@@ -20,6 +20,7 @@ import {
 const BG_IMAGES = [
   { id: "bg-1", src: "/bg-images/bg_video_scene-1.mp4", label: "Dakshineshwar" },
   { id: "bg-2", src: "/bg-images/bg_video_scene-2.mp4", label: "Maa Kali" },
+  { id: "bg-3", src: "/bg-images/bg_video_scene-3.mp4", label: "Aarti" },
 ];
 
 const COLOR_THEMES: { id: ColorTheme; label: string; dot: string }[] = [
@@ -55,7 +56,9 @@ function VideoBg({ src }: { src: string }) {
   );
 }
 
-function PrefsPanel({
+type PanelId = "scene" | "theme";
+
+function PrefsBar({
   activeSrc,
   onSrcChange,
   activeTheme,
@@ -66,81 +69,118 @@ function PrefsPanel({
   activeTheme: ColorTheme;
   onThemeChange: (theme: ColorTheme) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<PanelId | null>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: MouseEvent) {
+      if (barRef.current && !barRef.current.contains(e.target as Node)) {
+        setOpen(null);
+      }
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  const toggle = (panel: PanelId) =>
+    setOpen((o) => (o === panel ? null : panel));
 
   return (
-    <div className="prefs-panel">
-      {open && (
-        <div className="prefs-panel__popup">
-          <div className="prefs-panel__popup-header">
-            <span className="prefs-panel__popup-title">Preferences</span>
+    <div className="prefs-bar" ref={barRef}>
+      <div className="prefs-bar__header">
+        <span className="prefs-bar__header-label">Preferences</span>
+      </div>
+      {/* ── Scene popup ── */}
+      {open === "scene" && (
+        <div className="prefs-bar__popup" data-side="left">
+          <div className="prefs-bar__popup-header">
+            <span className="prefs-bar__popup-label">Background Scene</span>
             <button
               type="button"
-              className="prefs-panel__close-btn"
-              onClick={() => setOpen(false)}
+              className="prefs-bar__popup-close"
+              onClick={() => setOpen(null)}
               aria-label="Close"
             >
               <X />
             </button>
           </div>
-
-          <div className="prefs-panel__section">
-            <span className="prefs-panel__section-label">Background Scene</span>
-            <div className="prefs-panel__scene-swatches">
-              {BG_IMAGES.map((v) => (
-                <button
-                  key={v.id}
-                  type="button"
-                  className={`prefs-panel__scene-swatch${activeSrc === v.src ? " prefs-panel__scene-swatch--active" : ""}`}
-                  onClick={() => onSrcChange(v.src)}
-                  aria-pressed={activeSrc === v.src}
-                  title={v.label}
-                >
-                  <video
-                    src={v.src}
-                    muted
-                    playsInline
-                    className="prefs-panel__scene-video"
-                  />
-                  <span className="prefs-panel__scene-label">{v.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="prefs-panel__section">
-            <span className="prefs-panel__section-label">Color Theme</span>
-            <div className="prefs-panel__theme-swatches">
-              {COLOR_THEMES.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  className={`prefs-panel__theme-swatch${activeTheme === t.id ? " prefs-panel__theme-swatch--active" : ""}`}
-                  onClick={() => onThemeChange(t.id)}
-                  aria-pressed={activeTheme === t.id}
-                  title={t.label}
-                >
-                  <span
-                    className="prefs-panel__theme-dot"
-                    style={{ background: t.dot }}
-                  />
-                  <span className="prefs-panel__theme-label">{t.label}</span>
-                </button>
-              ))}
-            </div>
+          <div className="prefs-bar__scene-swatches">
+            {BG_IMAGES.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                className={`prefs-bar__scene-swatch${activeSrc === v.src ? " prefs-bar__scene-swatch--active" : ""}`}
+                onClick={() => { onSrcChange(v.src); setOpen(null); }}
+                aria-pressed={activeSrc === v.src}
+                title={v.label}
+              >
+                <video src={v.src} muted playsInline className="prefs-bar__scene-video" />
+                <span className="prefs-bar__scene-label">{v.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       )}
-      <button
-        type="button"
-        className={`prefs-panel__toggle${open ? " prefs-panel__toggle--active" : ""}`}
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Preferences"
-        aria-expanded={open}
-      >
-        <Settings2 />
-        <span className="prefs-panel__toggle-label">Preferences</span>
-      </button>
+
+      {/* ── Theme popup ── */}
+      {open === "theme" && (
+        <div className="prefs-bar__popup" data-side="right">
+          <div className="prefs-bar__popup-header">
+            <span className="prefs-bar__popup-label">Color Theme</span>
+            <button
+              type="button"
+              className="prefs-bar__popup-close"
+              onClick={() => setOpen(null)}
+              aria-label="Close"
+            >
+              <X />
+            </button>
+          </div>
+          <div className="prefs-bar__theme-swatches">
+            {COLOR_THEMES.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`prefs-bar__theme-swatch${activeTheme === t.id ? " prefs-bar__theme-swatch--active" : ""}`}
+                onClick={() => onThemeChange(t.id)}
+                aria-pressed={activeTheme === t.id}
+                title={t.label}
+              >
+                <span className="prefs-bar__theme-dot" style={{ background: t.dot }} />
+                <span className="prefs-bar__theme-label">{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="prefs-bar__footer">
+        {/* ── Buttons ── */}
+        <button
+          type="button"
+          className={`prefs-bar__btn${open === "scene" ? " prefs-bar__btn--active" : ""}`}
+          onClick={() => toggle("scene")}
+          aria-pressed={open === "scene"}
+          aria-expanded={open === "scene"}
+          aria-label="Change background scene"
+        >
+          <Film />
+          <span className="prefs-bar__btn-label">Scene</span>
+        </button>
+
+        <button
+          type="button"
+          className={`prefs-bar__btn${open === "theme" ? " prefs-bar__btn--active" : ""}`}
+          onClick={() => toggle("theme")}
+          aria-pressed={open === "theme"}
+          aria-expanded={open === "theme"}
+          aria-label="Change color theme"
+        >
+          <Palette />
+          <span className="prefs-bar__btn-label">Theme</span>
+        </button>
+      </div>
     </div>
   );
 }
@@ -176,13 +216,17 @@ function ShellLayout({ playlistId }: { playlistId: string }) {
       <VideoBg src={activeSrc} />
       <Header playlistId={playlistId} />
       <NowPlaying />
-      <PlayerBar playlistId={playlistId} />
-      <PrefsPanel
-        activeSrc={activeSrc}
-        onSrcChange={setSrc}
-        activeTheme={activeTheme}
-        onThemeChange={setTheme}
-      />
+
+      <div className="player-zone">
+        <PrefsBar
+          activeSrc={activeSrc}
+          onSrcChange={setSrc}
+          activeTheme={activeTheme}
+          onThemeChange={setTheme}
+        />
+        <PlayerBar playlistId={playlistId} />
+      </div>
+
       <QueuePanel />
     </div>
   );

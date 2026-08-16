@@ -1,7 +1,7 @@
 export const DEFAULT_PLAYLIST_ID = "PLTJW3mgaO5zo";
 
 export const SITE_NAME = "Shyama Sangeet";
-export const SITE_NAME_BN = "শ্যামা সংগীত";
+export const SITE_NAME_BN = "শ্যামা সঙ্গীত";
 export const SITE_TAGLINE_BN = "মায়ের গানে • মনের শান্তি";
 export const SITE_DESCRIPTION =
   `${SITE_TAGLINE_BN} — a Bengali devotional music player for Shyama Sangeet, soul-stirring songs dedicated to Goddess Kali.`;

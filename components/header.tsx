@@ -116,7 +116,7 @@ export function Header({ playlistId }: { playlistId?: string }) {
 
           {countdown && (
             <div className="site-header__countdown">
-              <span className="site-header__countdown-label">Next Puja</span>
+              <span className="site-header__countdown-label">Countdown</span>
               <span className="site-header__countdown-units">
                 <span className="site-header__countdown-unit">
                   <strong>{countdown.days}</strong>

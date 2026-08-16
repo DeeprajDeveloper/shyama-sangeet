@@ -18,7 +18,7 @@ export function NowPlaying() {
 
       {(current?.author || current?.englishTitle || current?.channelTitle) && (
         <p className="now-playing__author">
-          {current?.displayTitle} — {current?.author || current?.englishTitle || current?.channelTitle}
+          {current?.displayTitle} - {current?.author || current?.englishTitle || current?.channelTitle}
         </p>
       )}
     </main>

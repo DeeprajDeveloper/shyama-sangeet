@@ -91,6 +91,9 @@ export function PlayerProvider({
   const playerRef = useRef<YT.Player | null>(null);
   const repeatRef = useRef<RepeatMode>("off");
   const restoredRef = useRef(false);
+  // Set before any user-initiated navigation so onPlayerState can force play
+  // when the YT player re-cues the new video (cuePlaylist playlist behavior).
+  const pendingAutoplayRef = useRef(false);
   const [tracks, setTracks] = useState<Track[]>(initialTracks);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -227,6 +230,17 @@ export function PlayerProvider({
         restorePlayback(player);
         syncFromPlayer(player);
       }
+      // When a user-initiated navigation (next/prev/playAt) causes the YT player
+      // to enter CUED state (instead of auto-playing), force play immediately.
+      if (state === YT_CUED && pendingAutoplayRef.current) {
+        pendingAutoplayRef.current = false;
+        player.playVideo();
+        return;
+      }
+      // Navigation succeeded without hitting CUED — clear the flag.
+      if (state === YT_PLAYING && pendingAutoplayRef.current) {
+        pendingAutoplayRef.current = false;
+      }
       if (state === YT_PAUSED || state === YT_ENDED) {
         persistPlayback();
       }
@@ -275,7 +289,12 @@ export function PlayerProvider({
     if (state === YT_PLAYING) player.pauseVideo();
     else player.playVideo();
   }, []);
-  const next = useCallback(() => playerRef.current?.nextVideo(), []);
+  const next = useCallback(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    pendingAutoplayRef.current = true;
+    player.nextVideo();
+  }, []);
   const prev = useCallback(() => {
     const player = playerRef.current;
     if (!player) return;
@@ -283,6 +302,7 @@ export function PlayerProvider({
       player.seekTo(0, true);
       return;
     }
+    pendingAutoplayRef.current = true;
     player.previousVideo();
   }, []);
   const seek = useCallback((seconds: number) => {
@@ -324,6 +344,7 @@ export function PlayerProvider({
   }, []);
 
   const playAt = useCallback((index: number) => {
+    pendingAutoplayRef.current = true;
     playerRef.current?.playVideoAt(index);
     setCurrentIndex(index);
     if (!getQueueDocked()) setQueueOpenState(false);
