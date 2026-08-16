@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a0000"/>
+      <stop offset="50%" style="stop-color:#4a0a0a"/>
+      <stop offset="100%" style="stop-color:#0c0508"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#g)"/>
+  <circle cx="960" cy="540" r="300" fill="none" stroke="#9b1c1c" stroke-width="1" opacity="0.2"/>
+  <circle cx="960" cy="540" r="200" fill="none" stroke="#9b1c1c" stroke-width="1" opacity="0.15"/>
+  <text x="960" y="510" font-family="sans-serif" font-size="48" text-anchor="middle" fill="#d97706" opacity="0.5">Sindur</text>
+  <text x="960" y="575" font-family="sans-serif" font-size="28" text-anchor="middle" fill="#d97706" opacity="0.3">Replace with bg-2.jpg</text>
+  <text x="960" y="620" font-family="sans-serif" font-size="22" text-anchor="middle" fill="#d97706" opacity="0.2">1920 × 1080 recommended</text>
+</svg>
